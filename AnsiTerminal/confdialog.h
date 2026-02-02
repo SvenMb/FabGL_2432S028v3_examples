@@ -190,6 +190,24 @@ constexpr int       BOOTINFO_TEMPDISABLED = 2;
 //                       WARN!! Good for ESP32 with 3.3V voltage (ESP-WROOM-32). This will BRICK your ESP32 if the flash isn't 3.3V
 //                       NOTE1: replace "/dev/cu.SLAB_USBtoUART" with your serial port
 //                       NOTE2: espefuse.py is downloadable from https://github.com/espressif/esptool
+#ifdef CYD2432S028v3
+static const char *  UARTPORT_STR[]       = { "USB: TX=1 RX=3",
+                                              "P3: TX=22 RX=35"
+                                              // ,"CN1: TX=4 RX=27"
+                                            };
+static const uint8_t UARTPORT_TX[]        = { UART_TX,
+                                              UART_RTS
+                                              // ,4
+                                            };
+static const uint8_t UARTPORT_RX[]        = { UART_RX,
+                                              UART_CTS
+                                              // ,27
+                                            };
+static const bool    UARTPORT_FLAGS[]     = { 0,
+                                              0
+                                              // ,UARTFLAG_USE_PS2PORT1
+                                            };
+#else
 static const char *  UARTPORT_STR[]       = { "FabGL Terminal: TX=2 RX=34",
                                               "USB: TX=1 RX=3",
                                               "PS/2 Mouse: TX=27 RX=26" };
@@ -202,6 +220,7 @@ static const uint8_t UARTPORT_RX[]        = { 34,
 static const bool    UARTPORT_FLAGS[]     = { 0,
                                               0,
                                               UARTFLAG_USE_PS2PORT1 };
+#endif
 constexpr int        UARTPORT_COUNT       = sizeof(UARTPORT_STR) / sizeof(char const *);
 
 // preferences keys
@@ -257,7 +276,12 @@ struct ConfDialogApp : public uiApp {
 
     rootWindow()->frameProps().fillBackground = false;
 
-    frame = new uiFrame(rootWindow(), "Terminal Configuration", UIWINDOW_PARENTCENTER, Size(380, 287), true, STYLE_FRAME);
+#ifdef CYD2432S028v3
+    frame = new uiFrame(rootWindow(), "", UIWINDOW_PARENTCENTER, Size(320, 240), true, STYLE_FRAME);
+    frame->windowStyle().borderSize     = 0;
+#else
+    frame = new uiFrame(rootWindow(), "Terminal Configuration", UIWINDOW_PARENTCENTER, Size(330, 260), true, STYLE_FRAME);
+#endif
     frameRect = frame->rect(fabgl::uiOrigin::Screen);
 
     frame->frameProps().resizeable        = false;
@@ -283,137 +307,136 @@ struct ConfDialogApp : public uiApp {
       }
     };
 
-    int y = 19;
+    int y = 6;
 
     // little help
-    new uiStaticLabel(frame, "FabGL Terminal - (c) 2019-2022 by Fabrizio Di Vittorio - fabgl.com", Point(30, y), true, STYLE_LABELHELP2);
-    new uiStaticLabel(frame, "Press TAB key to move between fields", Point(100, y + 12), true, STYLE_LABELHELP);
-    new uiStaticLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(52, y + 24), true, STYLE_LABELHELP);
+    new uiStaticLabel(frame, "FabGL Terminal - (c) 2019-2022 by Fabrizio Di Vittorio - fabgl.com", Point(4, y), true, STYLE_LABELHELP2);
+    new uiStaticLabel(frame, "Press TAB key to move between fields", Point(60, y + 12), true, STYLE_LABELHELP);
+    new uiStaticLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(20, y + 24), true, STYLE_LABELHELP);
 
 
-    y += 46;
+    y += 42;
 
     // select terminal emulation combobox
     new uiStaticLabel(frame, "Terminal Type", Point(10,  y), true, STYLE_STATICLABEL);
-    termComboBox = new uiComboBox(frame, Point(10, y + 12), Size(85, 20), 80, true, STYLE_COMBOBOX);
+    termComboBox = new uiComboBox(frame, Point(10, y + 12), Size(75, 20), 80, true, STYLE_COMBOBOX);
     termComboBox->items().append(SupportedTerminals::names(), SupportedTerminals::count());
     termComboBox->selectItem((int)getTermType());
 
     // select keyboard layout
-    new uiStaticLabel(frame, "Keyboard Layout", Point(110, y), true, STYLE_STATICLABEL);
-    kbdComboBox = new uiComboBox(frame, Point(110, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "Keyboard", Point(100, y), true, STYLE_STATICLABEL);
+    kbdComboBox = new uiComboBox(frame, Point(100, y + 12), Size(70, 20), 70, true, STYLE_COMBOBOX);
     kbdComboBox->items().append(SupportedLayouts::names(), SupportedLayouts::count());
     kbdComboBox->selectItem(getKbdLayoutIndex());
 
     // background color
-    new uiStaticLabel(frame, "Background Color", Point(200,  y), true, STYLE_STATICLABEL);
-    bgColorComboBox = new uiColorComboBox(frame, Point(200, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "bg Color", Point(185,  y), true, STYLE_STATICLABEL);
+    bgColorComboBox = new uiColorComboBox(frame, Point(185, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     bgColorComboBox->selectColor(getBGColor());
 
     // foreground color
-    new uiStaticLabel(frame, "Foreground Color", Point(290,  y), true, STYLE_STATICLABEL);
-    fgColorComboBox = new uiColorComboBox(frame, Point(290, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "fg Color", Point(255,  y), true, STYLE_STATICLABEL);
+    fgColorComboBox = new uiColorComboBox(frame, Point(255, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     fgColorComboBox->selectColor(getFGColor());
 
 
-    y += 48;
+    y += 40;
 
     // baud rate
     new uiStaticLabel(frame, "Baud Rate", Point(10,  y), true, STYLE_STATICLABEL);
-    baudRateComboBox = new uiComboBox(frame, Point(10, y + 12), Size(70, 20), 70, true, STYLE_COMBOBOX);
+    baudRateComboBox = new uiComboBox(frame, Point(10, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     baudRateComboBox->items().append(BAUDRATES_STR, BAUDRATES_COUNT);
     baudRateComboBox->selectItem(getBaudRateIndex());
 
     // data length
-    new uiStaticLabel(frame, "Data Length", Point(95,  y), true, STYLE_STATICLABEL);
-    datalenComboBox = new uiComboBox(frame, Point(95, y + 12), Size(60, 20), 70, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "Data Length", Point(75,  y), true, STYLE_STATICLABEL);
+    datalenComboBox = new uiComboBox(frame, Point(75, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     datalenComboBox->items().append(DATALENS_STR, 4);
     datalenComboBox->selectItem(getDataLenIndex());
 
     // parity
-    new uiStaticLabel(frame, "Parity", Point(170,  y), true, STYLE_STATICLABEL);
-    parityComboBox = new uiComboBox(frame, Point(170, y + 12), Size(45, 20), 50, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "Parity", Point(140,  y), true, STYLE_STATICLABEL);
+    parityComboBox = new uiComboBox(frame, Point(140, y + 12), Size(45, 20), 50, true, STYLE_COMBOBOX);
     parityComboBox->items().append(PARITY_STR, 3);
     parityComboBox->selectItem(getParityIndex());
 
     // stop bits
-    new uiStaticLabel(frame, "Stop Bits", Point(230,  y), true, STYLE_STATICLABEL);
-    stopBitsComboBox = new uiComboBox(frame, Point(230, y + 12), Size(55, 20), 50, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "Stop Bits", Point(195,  y), true, STYLE_STATICLABEL);
+    stopBitsComboBox = new uiComboBox(frame, Point(195, y + 12), Size(40, 20), 50, true, STYLE_COMBOBOX);
     stopBitsComboBox->items().append(STOPBITS_STR, 4);
     stopBitsComboBox->selectItem(getStopBitsIndex());
 
     // flow control
-    new uiStaticLabel(frame, "Flow Control", Point(300,  y), true, STYLE_STATICLABEL);
-    flowCtrlComboBox = new uiComboBox(frame, Point(300, y + 12), Size(65, 20), 35, true, STYLE_COMBOBOX);
+    new uiStaticLabel(frame, "Flow Control", Point(245,  y), true, STYLE_STATICLABEL);
+    flowCtrlComboBox = new uiComboBox(frame, Point(245, y + 12), Size(65, 20), 35, true, STYLE_COMBOBOX);
     flowCtrlComboBox->items().append(FLOWCTRL_STR, 4);
     flowCtrlComboBox->selectItem((int)getFlowCtrl());
 
 
-    y += 48;
+    y += 40;
 
+    // select UART port
+    new uiStaticLabel(frame, "Port", Point(10, y), true, STYLE_STATICLABEL);
+    uartPortComboBox = new uiComboBox(frame, Point(10, y + 12), Size(100, 20), 50, true, STYLE_COMBOBOX);
+    uartPortComboBox->items().append(UARTPORT_STR, UARTPORT_COUNT);
+    uartPortComboBox->selectItem(getUARTPortIndex());
+
+    // font
+    new uiStaticLabel(frame, "Font", Point(120,  y), true, STYLE_STATICLABEL);
+    fontComboBox = new uiComboBox(frame, Point(120, y + 12), Size(60, 20), 70, true, STYLE_COMBOBOX);
+    fontComboBox->items().append(FONTS_STR, FONTS_COUNT);
+    fontComboBox->selectItem(getFontIndex());
+
+    // columns
+    new uiStaticLabel(frame, "Columns", Point(190,  y), true, STYLE_STATICLABEL);
+    columnsComboBox = new uiComboBox(frame, Point(190, y + 12), Size(40, 20), 50, true, STYLE_COMBOBOX);
+    columnsComboBox->items().append(COLUMNS_STR, COLUMNS_COUNT);
+    columnsComboBox->selectItem(getColumnsIndex());
+
+    // rows
+    new uiStaticLabel(frame, "Rows", Point(240,  y), true, STYLE_STATICLABEL);
+    rowsComboBox = new uiComboBox(frame, Point(240, y + 12), Size(40, 20), 50, true, STYLE_COMBOBOX);
+    rowsComboBox->items().append(ROWS_STR, ROWS_COUNT);
+    rowsComboBox->selectItem(getRowsIndex());
+
+    // show boot info
+    new uiStaticLabel(frame, "Info", Point(290, y ), true, STYLE_STATICLABEL);
+    infoCheckBox = new uiCheckBox(frame, Point(290, y + 14), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
+    infoCheckBox->setChecked(getBootInfo() == BOOTINFO_ENABLED);
+
+    y += 40;
+
+#ifndef CYD2432S028v3
     // resolution
     new uiStaticLabel(frame, "Resolution", Point(10, y), true, STYLE_STATICLABEL);
     resolutionComboBox = new uiComboBox(frame, Point(10, y + 12), Size(119, 20), 53, true, STYLE_COMBOBOX);
     resolutionComboBox->items().append(RESOLUTIONS_STR, RESOLUTIONS_COUNT);
     resolutionComboBox->selectItem(getResolutionIndex());
+#endif
 
-    // font
-    new uiStaticLabel(frame, "Font", Point(144,  y), true, STYLE_STATICLABEL);
-    fontComboBox = new uiComboBox(frame, Point(144, y + 12), Size(110, 20), 70, true, STYLE_COMBOBOX);
-    fontComboBox->items().append(FONTS_STR, FONTS_COUNT);
-    fontComboBox->selectItem(getFontIndex());
-
-    // columns
-    new uiStaticLabel(frame, "Columns", Point(269,  y), true, STYLE_STATICLABEL);
-    columnsComboBox = new uiComboBox(frame, Point(269, y + 12), Size(40, 20), 50, true, STYLE_COMBOBOX);
-    columnsComboBox->items().append(COLUMNS_STR, COLUMNS_COUNT);
-    columnsComboBox->selectItem(getColumnsIndex());
-
-    // rows
-    new uiStaticLabel(frame, "Rows", Point(325,  y), true, STYLE_STATICLABEL);
-    rowsComboBox = new uiComboBox(frame, Point(324, y + 12), Size(40, 20), 50, true, STYLE_COMBOBOX);
-    rowsComboBox->items().append(ROWS_STR, ROWS_COUNT);
-    rowsComboBox->selectItem(getRowsIndex());
-
-
-    y += 48;
-
-    // select UART port
-    new uiStaticLabel(frame, "Port", Point(10, y), true, STYLE_STATICLABEL);
-    uartPortComboBox = new uiComboBox(frame, Point(10, y + 12), Size(160, 20), 50, true, STYLE_COMBOBOX);
-    uartPortComboBox->items().append(UARTPORT_STR, UARTPORT_COUNT);
-    uartPortComboBox->selectItem(getUARTPortIndex());
-
-    // show boot info
-    new uiStaticLabel(frame, "Show Info", Point(200, y + 16), true, STYLE_STATICLABEL);
-    infoCheckBox = new uiCheckBox(frame, Point(250, y + 14), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
-    infoCheckBox->setChecked(getBootInfo() == BOOTINFO_ENABLED);
-
-
-    y += 48;
-
+    y += 44;
 
     // Quit button: exit without save
-    auto exitNoSaveButton = new uiButton(frame, "Quit [ESC]", Point(10, y), Size(58, 20), uiButtonKind::Button, true, STYLE_BUTTON);
+    auto exitNoSaveButton = new uiButton(frame, "Quit[ESC]", Point(10, y), Size(52, 20), uiButtonKind::Button, true, STYLE_BUTTON);
     exitNoSaveButton->onClick = [&]() {
       quit(0);
     };
 
     // Save & Quit button: exit with save
-    auto exitSaveButton = new uiButton(frame, "Save & Quit [F10]", Point(74, y), Size(90, 20), uiButtonKind::Button, true, STYLE_BUTTON);
+    auto exitSaveButton = new uiButton(frame, "Save[F10]", Point(68, y), Size(56, 20), uiButtonKind::Button, true, STYLE_BUTTON);
     exitSaveButton->onClick = [&]() {
       saveProps();
       quit(0);
     };
 
     // reboot button
-    auto rebootButton = new uiButton(frame, "Reboot [CTRL+ESC]", Point(170, y), Size(100, 20), uiButtonKind::Button, true, STYLE_BUTTON);
+    auto rebootButton = new uiButton(frame, "Reboot[CTRL+ESC]", Point(130, y), Size(94, 20), uiButtonKind::Button, true, STYLE_BUTTON);
     rebootButton->onClick = [&]() {
       performReboot();
     };
 
     // install a program
-    auto installButton = new uiButton(frame, "Install Programs", Point(276, y), Size(90, 20), uiButtonKind::Button, true, STYLE_BUTTON);
+    auto installButton = new uiButton(frame, "Install Programs", Point(230, y), Size(84, 20), uiButtonKind::Button, true, STYLE_BUTTON);
     installButton->onClick = [&]() {
       progToInstall = -1;
       auto progsDialog = new ProgsDialog(rootWindow());
@@ -425,7 +448,7 @@ struct ConfDialogApp : public uiApp {
     };
 
     // RTS Status (clickable)
-    RTSStatus = new uiLabel(frame, "RTS", Point(300, 223), Size(30, 15), true, STYLE_LABELBUTTON);
+    RTSStatus = new uiLabel(frame, "RTS", Point(200, 180), Size(30, 15), true, STYLE_LABELBUTTON);
     setRTSStatus(SerialPort.RTSStatus());
     RTSStatus->onClick = [&]() {
       bool newval = !SerialPort.RTSStatus();
@@ -434,7 +457,7 @@ struct ConfDialogApp : public uiApp {
     };
 
     // CTS Status
-    CTSStatus = new uiLabel(frame, "CTS", Point(335, 223), Size(30, 15), true, STYLE_LABELBUTTON);
+    CTSStatus = new uiLabel(frame, "CTS", Point(260, 180), Size(30, 15), true, STYLE_LABELBUTTON);
     lastCTSStatus = SerialPort.CTSStatus();
     setCTSStatus(lastCTSStatus);
 
@@ -469,7 +492,10 @@ struct ConfDialogApp : public uiApp {
 
   void saveProps() {
     // need reboot?
-    bool reboot = resolutionComboBox->selectedItem() != getResolutionIndex() ||
+    bool reboot = 
+#ifndef CYD2432S028v3
+                  resolutionComboBox->selectedItem() != getResolutionIndex() ||
+#endif
                   fontComboBox->selectedItem()       != getFontIndex()       ||
                   columnsComboBox->selectedItem()    != getColumnsIndex()    ||
                   rowsComboBox->selectedItem()       != getRowsIndex()       ||
@@ -482,10 +508,16 @@ struct ConfDialogApp : public uiApp {
     preferences.putInt(PREF_DATALEN, datalenComboBox->selectedItem());
     preferences.putInt(PREF_PARITY, parityComboBox->selectedItem());
     preferences.putInt(PREF_STOPBITS, stopBitsComboBox->selectedItem());
+#ifdef CYD2432S028v3
+    if (uartPortComboBox->selectedItem() > 0 && flowCtrlComboBox->selectedItem() > 1 )
+      flowCtrlComboBox->selectItem(0);
+#endif
     preferences.putInt(PREF_FLOWCTRL, flowCtrlComboBox->selectedItem());
     preferences.putInt(PREF_BGCOLOR, (int)bgColorComboBox->selectedColor());
     preferences.putInt(PREF_FGCOLOR, (int)fgColorComboBox->selectedColor());
+#ifndef CYD2432S028v3
     preferences.putInt(PREF_RESOLUTION, resolutionComboBox->selectedItem());
+#endif
     preferences.putInt(PREF_FONT, fontComboBox->selectedItem());
     preferences.putInt(PREF_COLUMNS, columnsComboBox->selectedItem());
     preferences.putInt(PREF_ROWS, rowsComboBox->selectedItem());
@@ -593,7 +625,7 @@ struct ConfDialogApp : public uiApp {
 
   static char const * getSerParamStr() {
     static char outstr[32];
-    snprintf(outstr, sizeof(outstr), "%s,%c%c%s flow=%s", BAUDRATES_STR[getBaudRateIndex()],
+    snprintf(outstr, sizeof(outstr), "%s,%c%c%s %s", BAUDRATES_STR[getBaudRateIndex()],
                                                           DATALENS_STR[getDataLenIndex()][0],
                                                           PARITY_STR[getParityIndex()][0],
                                                           STOPBITS_STR[getStopBitsIndex()],
@@ -614,6 +646,12 @@ struct ConfDialogApp : public uiApp {
 
   static void setupDisplay() {
     // setup display controller
+#ifdef CYD2432S028v3
+    DisplayController = new fabgl::ST7789nController;
+    DisplayController->begin(TFT_SCK, TFT_MOSI, TFT_DC, TFT_RESET, TFT_CS, TFT_SPIBUS, TFT_BL);
+    DisplayController->setResolution(TFT_240x320);
+    DisplayController->setOrientation(fabgl::TFTOrientation::Rotate90);
+#else
     auto res = getTempResolutionIndex();
     if (res == -1)
       res = getResolutionIndex();
@@ -638,6 +676,7 @@ struct ConfDialogApp : public uiApp {
     }
     DisplayController->begin();
     DisplayController->setResolution(RESOLUTIONS_MODELINE[res], -1, RESOLUTIONS_HEIGHT[res]);
+#endif
 
     // setup terminal
     auto cols = COLUMNS_INT[getColumnsIndex()];
@@ -666,7 +705,10 @@ struct ConfDialogApp : public uiApp {
     
     // configure serial port
     auto uidx = getUARTPortIndex();
-    SerialPort.setSignals(UARTPORT_RX[uidx], UARTPORT_TX[uidx], UART_RTS, UART_CTS);
+    if (UARTPORT_TX[uidx]!=UART_RTS)
+      SerialPort.setSignals(UARTPORT_RX[uidx], UARTPORT_TX[uidx], UART_RTS, UART_CTS);
+    else
+      SerialPort.setSignals(UARTPORT_RX[uidx], UARTPORT_TX[uidx]);
     SerialPort.setup(2, BAUDRATES_INT[getBaudRateIndex()], DATALENS_INT[getDataLenIndex()], PARITY_CHAR[getParityIndex()], STOPBITS_FLOAT[getStopBitsIndex()], getFlowCtrl());
   }
 

@@ -41,7 +41,7 @@
 
 
   ProgsDialog(uiFrame * parent)
-    : uiFrame(parent, "Programs installer", UIWINDOW_PARENTCENTER, Size(330, 130), true, STYLE_FRAME) {
+    : uiFrame(parent, "Programs installer", UIWINDOW_PARENTCENTER, Size(300, 130), true, STYLE_FRAME) {
     frameProps().resizeable        = false;
     frameProps().moveable          = false;
     frameProps().hasMaximizeButton = false;
