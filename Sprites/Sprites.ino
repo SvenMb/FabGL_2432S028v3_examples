@@ -215,6 +215,7 @@ void setup()
 
   DisplayController.begin(TFT_SCK, TFT_MOSI, TFT_DC, TFT_RESET, TFT_CS, TFT_SPIBUS, TFT_BL);
   DisplayController.setResolution(TFT_240x320);
+  DisplayController.setOrientation(fabgl::TFTOrientation::Rotate90);
 
   // draw background
   Canvas cv(&DisplayController);
