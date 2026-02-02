@@ -31,8 +31,8 @@ fabgl::SerialPort                   SerialPort;
 #define SD_SCK  18
 #define SD_CS   5
 #define LDR     34
-#define PS2_DAT GPIO_NUM_4
-#define PS2_CLK GPIO_NUM_27
+#define PS2_DAT GPIO_NUM_27
+#define PS2_CLK GPIO_NUM_4
 #define AUDIO 26
 // #define BOOT    0
 // #define UART_CTS 35
@@ -51,7 +51,8 @@ void setup()
   unsigned int cols,rows,width,height;
   Serial.begin(BAUDRATE); Serial.write("\n\n\n");
 
-  PS2Controller.begin(PS2Preset::KeyboardPort0);
+  // PS2Controller.begin(PS2Preset::KeyboardPort0);
+  (new fabgl::Keyboard)->begin(PS2_CLK, PS2_DAT, true, true);
 
   DisplayController.begin(TFT_SCK, TFT_MOSI, TFT_DC, TFT_RESET, TFT_CS, TFT_SPIBUS, TFT_BL);
   DisplayController.setResolution(TFT_240x320);
