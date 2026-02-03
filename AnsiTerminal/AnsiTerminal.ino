@@ -218,7 +218,8 @@ void setup()
   // onUserSequence is triggered whenever a User Sequence has been received (ESC + '_#' ... '$'), where '...' is sent here
   Terminal.onUserSequence = [&](char const * seq) {
     // 'R': change resolution (for example: ESC + "_#R512x384x64$")
-    for (int i = 0; i < RESOLUTIONS_COUNT; ++i)
+#ifndef CYD2432S028v3
+      for (int i = 0; i < RESOLUTIONS_COUNT; ++i)
       if (strcmp(RESOLUTIONS_CMDSTR[i], seq) == 0) {
         // found resolution string
         preferences.putInt(PREF_TEMPRESOLUTION, i);
@@ -226,6 +227,9 @@ void setup()
           preferences.putInt(PREF_BOOTINFO, BOOTINFO_TEMPDISABLED);
         ESP.restart();
       }
+#else
+      Terminal.printf("Resolution change requested: %s\r\n",seq);
+#endif
   };
 }
 
