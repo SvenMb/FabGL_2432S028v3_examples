@@ -213,7 +213,6 @@ uint8 _ccp_dir(void) {
             _ccp_printfcb(tmpFCB, FALSE);
             ++ccount;
 #ifdef FABGL
-#pragma message "This FABGL"
             if ((Terminal.getColumns() < 68) && (ccount > 2))
                 ccount = 0;
             if ((Terminal.getColumns() < 50) && (ccount > 1))
@@ -221,7 +220,6 @@ uint8 _ccp_dir(void) {
             else if (ccount > 3)
                 ccount = 0;
 #else
-#pragma message "This OHNE"
             if (ccount > 3)
                 ccount = 0;
 #endif

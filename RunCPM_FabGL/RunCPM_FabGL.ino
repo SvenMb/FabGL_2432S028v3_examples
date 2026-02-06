@@ -344,14 +344,10 @@ _puts("\e[0m ]\r\n");
 // =========================================================================================
 #ifdef VGA8
 // VGA8 Colored Text
-              { 
-              _puts("\e[37m\e[41m V \e[30m\e[102m G \e[92m\e[104m A \e[30m\e[107m 8 \e[0m-\e[37m\e[44m Controller   \e[0m   [\e[47m \e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[107m \e[0m]\r\n");
-              }
+_puts("\e[37m\e[41m V \e[30m\e[102m G \e[92m\e[104m A \e[30m\e[107m 8 \e[0m-\e[37m\e[44m Controller   \e[0m   [\e[47m \e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[107m \e[0m]\r\n");
 #else // VGA8
 // VGA16 Colored Text
-              {
-              _puts("\e[96m\e[101m V \e[30m\e[102m G \e[96m\e[104m A \e[30m\e[103m 16 \e[96m\e[45m Controller   \e[0m   [\e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[103m \e[43m \e[105m \e[45m \e[106m \e[46m \e[107m \e[47m \e[0m]\r\n");
-              }
+_puts("\e[96m\e[101m V \e[30m\e[102m G \e[96m\e[104m A \e[30m\e[103m 16 \e[96m\e[45m Controller   \e[0m   [\e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[103m \e[43m \e[105m \e[45m \e[106m \e[46m \e[107m \e[47m \e[0m]\r\n");
 #endif // VGA8
 
 // =========================================================================================
