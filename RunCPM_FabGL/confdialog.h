@@ -83,6 +83,7 @@ struct ConfDialogApp : public uiApp {
   uiCheckBox *      serfltCheckBox;
 
   void init() {
+    Serial.printf("%d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
 
     setStyle(&dialogStyle);
 
@@ -93,11 +94,13 @@ struct ConfDialogApp : public uiApp {
     frame->windowStyle().borderSize     = 0;
     int y = 4;
 #else
-    frame = new uiFrame(rootWindow(), "Terminal Configuration", UIWINDOW_PARENTCENTER, Size(380, 275), true, STYLE_FRAME);
+    frame = new uiFrame(rootWindow(), "Terminal Configuration", UIWINDOW_PARENTCENTER, Size(330, 260), true, STYLE_FRAME);
     int y = 24;
 #endif
 
     frameRect = frame->rect(fabgl::uiOrigin::Screen);
+
+    Serial.printf("%d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
 
     frame->frameProps().resizeable        = false;
     frame->frameProps().moveable          = false;
@@ -115,82 +118,108 @@ struct ConfDialogApp : public uiApp {
         quit(0);
       }
     };
+    Serial.printf("%d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     // little help
-    new uiLabel(frame, "RunCPM for VGA32 by Guido Lehwalder & coopzone-dc", Point(28, y), Size(0, 0), true, STYLE_LABELHELP);
-    new uiLabel(frame, "Press TAB key to move between fields", Point(68, y +18), Size(0, 0), true, STYLE_LABELHELP);
-    new uiLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(28, y + 30), Size(0, 0), true, STYLE_LABELHELP);
+    new uiStaticLabel(frame, "RunCPM for VGA32 by Guido Lehwalder & coopzone-dc", Point(28, y), true, STYLE_LABELHELP2);
+    new uiStaticLabel(frame, "Press TAB key to move between fields", Point(68, y +18), true, STYLE_LABELHELP2);
+    new uiStaticLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(28, y + 30), true, STYLE_LABELHELP2);
+    Serial.printf("1: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
 
     y += 50;
 
     // select terminal emulation combobox
-    new uiLabel(frame, "Terminal Type", Point(10,  y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "Terminal Type", Point(10,  y), true, STYLE_STATICLABEL);
     termComboBox = new uiComboBox(frame, Point(10, y + 12), Size(75, 20), 80, true, STYLE_COMBOBOX);
     termComboBox->items().append(SupportedTerminals::names(), SupportedTerminals::count());
     termComboBox->selectItem((int)getTermType());
+    Serial.printf("2: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     // select keyboard layout
-    new uiLabel(frame, "Keyboard", Point(100, y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "Keyboard", Point(100, y), true, STYLE_STATICLABEL);
     kbdComboBox = new uiComboBox(frame, Point(100, y + 12), Size(70, 20), 70, true, STYLE_COMBOBOX);
     kbdComboBox->items().append(SupportedLayouts::names(), SupportedLayouts::count());
     kbdComboBox->selectItem(getKbdLayoutIndex());
+    Serial.printf("3: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     // background color
-    new uiLabel(frame, "bg Color", Point(185,  y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "bg Color", Point(185,  y), true, STYLE_STATICLABEL);
     bgColorComboBox = new uiColorComboBox(frame, Point(185, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     bgColorComboBox->selectColor(getBGColor());
+    Serial.printf("4: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     // foreground color
-    new uiLabel(frame, "fg Color", Point(255,  y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "fg Color", Point(255,  y), true, STYLE_STATICLABEL);
     fgColorComboBox = new uiColorComboBox(frame, Point(255, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     fgColorComboBox->selectColor(getFGColor());
+    Serial.printf("5: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     y += 44;
 
     // font
-    new uiLabel(frame, "Font", Point(10,  y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "Font", Point(10,  y), true, STYLE_STATICLABEL);
     fontComboBox = new uiComboBox(frame, Point(10, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
     fontComboBox->items().append(FONTS_STR, FONTS_COUNT);
     fontComboBox->selectItem(getFontIndex());
+    Serial.printf("6: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     // bold attribute color
-    new uiLabel(frame, "Bold Color", Point(255,  y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "Bold Color", Point(255,  y), true, STYLE_STATICLABEL);
     bdColorComboBox = new uiColorComboBox(frame, Point(255, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     bdColorComboBox->selectColor(getBDColor());
+    Serial.printf("7: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     y += 44;
 
     // show keyclick select
-    new uiLabel(frame, "KeyClick", Point(10, y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "KeyClick", Point(10, y), true, STYLE_STATICLABEL);
     clickCheckBox = new uiCheckBox(frame, Point(80, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
     clickCheckBox->setChecked(getKeyClick() == KEYCLICK_ENABLED);
+    Serial.printf("8: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
 
     y += 24;
 
     // set control to usb-serial 115.200
-    new uiLabel(frame, "USBSerControl", Point(10, y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "USBSerControl", Point(10, y), true, STYLE_STATICLABEL);
     serctlCheckBox = new uiCheckBox(frame, Point(80, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
     serctlCheckBox->setChecked(getSerCtl() == SERCTL_ENABLED);
+    Serial.printf("9: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     // set mirroring to usb-serial
-    new uiLabel(frame, "USBSerMirror", Point(110, y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "USBSerMirror", Point(110, y), true, STYLE_STATICLABEL);
     sermirCheckBox = new uiCheckBox(frame, Point(180, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
     sermirCheckBox->setChecked(getSerMir() == SERMIR_ENABLED);
+    Serial.printf("10: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
+
 
     y += 24;
 
     // set filter for usb-serial
-    new uiLabel(frame, "USBSerFilter", Point(10, y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "USBSerFilter", Point(10, y), true, STYLE_STATICLABEL);
+    Serial.printf("11: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
     serfltCheckBox = new uiCheckBox(frame, Point(80, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
+    Serial.printf("11: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
     serfltCheckBox->setChecked(getSerFlt() == SERFLT_ENABLED);
+    Serial.printf("11: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_8BIT));
 
 
     // show boot info
-    new uiLabel(frame, "BootInfo", Point(110, y), Size(0, 0), true, STYLE_LABEL);
+    new uiStaticLabel(frame, "BootInfo", Point(110, y), true, STYLE_STATICLABEL);
     infoCheckBox = new uiCheckBox(frame, Point(180, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
     infoCheckBox->setChecked(getBootInfo() == BOOTINFO_ENABLED);
+    Serial.printf("12: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_32BIT));
 
     y += 24;
 
@@ -200,6 +229,7 @@ struct ConfDialogApp : public uiApp {
     exitNoSaveButton->onClick = [&]() {
       quit(0);
     };
+    Serial.printf("13: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_32BIT));
 
     // exit with save button
     auto exitSaveButton = new uiButton(frame, "Save & Quit [F10]", Point(110, y), Size(90, 20), uiButtonKind::Button, true, STYLE_BUTTON);
@@ -207,11 +237,14 @@ struct ConfDialogApp : public uiApp {
       saveProps();
       quit(0);
     };
+    Serial.printf("LAST: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_32BIT));
 
 
 
     setActiveWindow(frame);
+    Serial.printf("%d\r\n",heap_caps_get_free_size(MALLOC_CAP_32BIT));
     setFocusedWindow(exitNoSaveButton);
+    Serial.printf("END: %d\r\n",heap_caps_get_free_size(MALLOC_CAP_32BIT));
 
   }
 
