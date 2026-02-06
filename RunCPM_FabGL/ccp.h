@@ -183,6 +183,7 @@ uint8 _ccp_dir(void) {
     uint8 dirHead[6] = "A: ";
     uint8 dirSep[6] = "  |  ";
     uint32 ccount = 0;  // Number of columns printed
+    uint8 l = 0;        // Number of lines printed
     
     if (_RamRead(ParFCB + 1) == ' ')
         for (i = 1; i < 12; ++i)
@@ -198,14 +199,32 @@ uint8 _ccp_dir(void) {
         while (!_SearchNext(ParFCB, TRUE)) {
             if (!ccount) {
                 _puts(	"\r\n");
+                l++;
+                if (pgSize && (l == pgSize)) {
+                    l = 0;
+                    _ccp_bios(B_CONIN);
+                    if (HIGH_REGISTER(AF) == 3)
+                        break;
+                 }
                 _puts(	(char *)dirHead);
             } else {
                 _puts((char *)dirSep);
             }
             _ccp_printfcb(tmpFCB, FALSE);
             ++ccount;
+#ifdef FABGL
+#pragma message "This FABGL"
+            if ((Terminal.getColumns() < 68) && (ccount > 2))
+                ccount = 0;
+            if ((Terminal.getColumns() < 50) && (ccount > 1))
+                ccount = 0;
+            else if (ccount > 3)
+                ccount = 0;
+#else
+#pragma message "This OHNE"
             if (ccount > 3)
                 ccount = 0;
+#endif
         }
     } else {
         _puts("No file");
@@ -1122,4 +1141,3 @@ if (i)
 } // _ccp
 
 #endif // ifndef CCP_H
-

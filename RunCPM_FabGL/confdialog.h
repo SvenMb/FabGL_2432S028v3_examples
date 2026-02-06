@@ -34,6 +34,19 @@ Preferences preferences;
 #define TERMVERSION_MAJ 1
 #define TERMVERSION_MIN 4
 
+static const char * FONTS_STR[]            = { "Auto", "VGA 4x6", "VGA 5x7", "VGA 5x8", "VGA 6x8", "VGA 6x9", "VGA 6x10", "VGA 6x12", "VGA 6x13",
+                                                "VGA 7x13", "VGA 7x14", "VGA 8x8", "VGA 8x9", "VGA 8x13", "VGA 8x14", "VGA 8x16", "VGA 8x19", "VGA 9x15",
+                                                "VGA 9x18", "VGA 10x20", "BigSerif 8x14", "BigSerif 8x16", "Block 8x14", "Broadway 8x14",
+                                                "Computer 8x14", "Courier 8x14", "LCD 8x14", "Old English 8x16", "Sans Serif 8x14", "Sans Serif 8x16",
+                                                "Slant 8x14", "Wiggly 8x16" };
+static const fabgl::FontInfo * FONTS_INFO[] = { nullptr, &fabgl::FONT_4x6, &fabgl::FONT_5x7, &fabgl::FONT_5x8, &fabgl::FONT_6x8, &fabgl::FONT_6x9,
+                                               &fabgl::FONT_6x10, &fabgl::FONT_6x12, &fabgl::FONT_6x13, &fabgl::FONT_7x13, &fabgl::FONT_7x14, &fabgl::FONT_8x8,
+                                               &fabgl::FONT_8x9, &fabgl::FONT_8x13, &fabgl::FONT_8x14, &fabgl::FONT_8x16, &fabgl::FONT_8x19, &fabgl::FONT_9x15,
+                                               &fabgl::FONT_9x18, &fabgl::FONT_10x20, &fabgl::FONT_BIGSERIF_8x14, &fabgl::FONT_BIGSERIF_8x16, &fabgl::FONT_BLOCK_8x14,
+                                               &fabgl::FONT_BROADWAY_8x14, &fabgl::FONT_COMPUTER_8x14, &fabgl::FONT_COURIER_8x14,
+                                               &fabgl::FONT_LCD_8x14, &fabgl::FONT_OLDENGL_8x16, &fabgl::FONT_SANSERIF_8x14, &fabgl::FONT_SANSERIF_8x16,
+                                               &fabgl::FONT_SLANT_8x14, &fabgl::FONT_WIGGLY_8x16 };
+constexpr int       FONTS_COUNT             = sizeof(FONTS_STR) / sizeof(char const *);
 
 constexpr int       BOOTINFO_DISABLED     = 0;
 constexpr int       BOOTINFO_ENABLED      = 1;
@@ -62,6 +75,7 @@ struct ConfDialogApp : public uiApp {
   uiColorComboBox * bgColorComboBox;
   uiColorComboBox * fgColorComboBox;
   uiColorComboBox * bdColorComboBox;
+  uiComboBox *      fontComboBox;
   uiCheckBox *      infoCheckBox;
   uiCheckBox *      clickCheckBox;
   uiCheckBox *      serctlCheckBox;
@@ -101,17 +115,17 @@ struct ConfDialogApp : public uiApp {
     };
 
 #ifdef CYD2432S028v3
-    int y = 8;
+    int y = 4;
 #else
     int y = 24;
 #endif
     // little help
     new uiLabel(frame, "RunCPM for VGA32 by Guido Lehwalder & coopzone-dc", Point(28, y), Size(0, 0), true, STYLE_LABELHELP);
-    new uiLabel(frame, "Press TAB key to move between fields", Point(68, y +24), Size(0, 0), true, STYLE_LABELHELP);
-    new uiLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(28, y + 36), Size(0, 0), true, STYLE_LABELHELP);
+    new uiLabel(frame, "Press TAB key to move between fields", Point(68, y +18), Size(0, 0), true, STYLE_LABELHELP);
+    new uiLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(28, y + 30), Size(0, 0), true, STYLE_LABELHELP);
 
 
-    y += 56;
+    y += 50;
 
     // select terminal emulation combobox
     new uiLabel(frame, "Terminal Type", Point(10,  y), Size(0, 0), true, STYLE_LABEL);
@@ -135,17 +149,26 @@ struct ConfDialogApp : public uiApp {
     fgColorComboBox = new uiColorComboBox(frame, Point(255, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     fgColorComboBox->selectColor(getFGColor());
 
-    y += 56;
+    y += 44;
+
+    // font
+    new uiLabel(frame, "Font", Point(10,  y), Size(0, 0), true, STYLE_LABEL);
+    fontComboBox = new uiComboBox(frame, Point(10, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    fontComboBox->items().append(FONTS_STR, FONTS_COUNT);
+    fontComboBox->selectItem(getFontIndex());
+
+    // bold attribute color
+    new uiLabel(frame, "Bold Color", Point(255,  y), Size(0, 0), true, STYLE_LABEL);
+    bdColorComboBox = new uiColorComboBox(frame, Point(255, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
+    bdColorComboBox->selectColor(getBDColor());
+
+    y += 44;
 
     // show keyclick select
     new uiLabel(frame, "KeyClick", Point(10, y), Size(0, 0), true, STYLE_LABEL);
     clickCheckBox = new uiCheckBox(frame, Point(80, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
     clickCheckBox->setChecked(getKeyClick() == KEYCLICK_ENABLED);
 
-    // bold attribute color
-    new uiLabel(frame, "Bold Color", Point(255,  y-16), Size(0, 0), true, STYLE_LABEL);
-    bdColorComboBox = new uiColorComboBox(frame, Point(255, y -4), Size(55, 20), 70, true, STYLE_COMBOBOX);
-    bdColorComboBox->selectColor(getBDColor());
 
     y += 24;
 
@@ -172,7 +195,7 @@ struct ConfDialogApp : public uiApp {
     infoCheckBox = new uiCheckBox(frame, Point(180, y - 2), Size(16, 16), uiCheckBoxKind::CheckBox, true, STYLE_CHECKBOX);
     infoCheckBox->setChecked(getBootInfo() == BOOTINFO_ENABLED);
 
-    y += 48;
+    y += 24;
 
 
     // exit without save button
@@ -203,7 +226,8 @@ struct ConfDialogApp : public uiApp {
                     clickCheckBox->checked()  != getKeyClick() ||
                     serctlCheckBox->checked() != getSerCtl()   ||
                     serfltCheckBox->checked() != getSerFlt()   ||                    
-                    sermirCheckBox->checked() != getSerMir();
+                    sermirCheckBox->checked() != getSerMir()   ||
+                    fontComboBox->selectedItem() != getFontIndex();
                   
     preferences.putInt("TermType", termComboBox->selectedItem());
     preferences.putInt("KbdLayout", kbdComboBox->selectedItem());
@@ -215,6 +239,7 @@ struct ConfDialogApp : public uiApp {
     preferences.putInt("SerCtl", serctlCheckBox->checked() ? SERCTL_ENABLED : SERCTL_DISABLED);
     preferences.putInt("SerMir", sermirCheckBox->checked() ? SERMIR_ENABLED : SERMIR_DISABLED);
     preferences.putInt("SerFlt", serfltCheckBox->checked() ? SERFLT_ENABLED : SERFLT_DISABLED);
+    preferences.putInt("FONT", fontComboBox->selectedItem());
 
     if (reboot) {
       auto rebootDialog = new RebootDialog(frame);
@@ -282,6 +307,10 @@ static int getSerFlt() {
     }
   }
 
+static int getFontIndex() {
+    return preferences.getInt("FONT", 0);                    // default 0 = auto
+  }
+
 
   static void loadConfiguration() {
     
@@ -292,7 +321,13 @@ static int getSerFlt() {
     Terminal.setForegroundColor(getFGColor());
     // change the bold color but dont (false) apply the blurry/unsharp maintainStyle
     Terminal.setColorForAttribute(CharStyle::Bold, getBDColor(), false);
-    
+    if (getFontIndex() == 0) {
+      // auto select a font from specified Columns and Rows or from 80x25
+      Terminal.loadFont(fabgl::getPresetFontInfo(Terminal.canvas()->getWidth(), Terminal.canvas()->getHeight(), 80, 25));
+    } else {
+      // load specified font
+      Terminal.loadFont(FONTS_INFO[getFontIndex()]);
+    }
   }
 
 };
