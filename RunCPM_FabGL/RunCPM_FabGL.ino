@@ -46,9 +46,14 @@ https://github.com/MockbaTheBorg/RunCPM/issues/143
 // Board definitions go into the "hardware" folder- Choose/change a file from there
 
 // =========================================================================================
+// 2432S028v3 Cheap Yellow Display with ST7789 Hardware Definition File
+// =========================================================================================
+#include "hardware/esp32/2432S028v3_esp32_nonLED.h"
+
+// =========================================================================================
 // TTGO VGA32 Hardware Definition File
 // =========================================================================================
-#include "hardware/esp32/ttgo_vga32_esp32_nonLED.h"
+// #include "hardware/esp32/ttgo_vga32_esp32_nonLED.h"
 
 // =========================================================================================
 // Olimex ESP32-SBC FabGL Hardware Definition File
@@ -94,6 +99,10 @@ bool SERFLT = false;
 #include "fabgl.h"
 #include "fabutils.h"
 
+#if defined(CYD2432S028v3)
+#include "TFTControllerST7789n.h"
+fabgl::ST7789nController  DisplayController;
+
 // =========================================================================================
 // Set VGAController in 8 or 16 Color Mode
 // VGA8Controller  for ESP32 Core v2.0.0 due to huge memory usage
@@ -101,24 +110,23 @@ bool SERFLT = false;
 // VGA16Controller does work good/better with FabGL-master from 11.10.2021
 // =========================================================================================
 
-// #define VGA8
-#define VGA16
+// #define VGA8  // define if low on memory
+// #define VGA16 // no need to define, is else path anyway
 
 // =========================================================================================
-#ifdef VGA8
+#elif defined(VGA8)
 bool SETVGA8 = true;
 fabgl::VGA8Controller   DisplayController;
-#endif
 // =========================================================================================
-#ifdef VGA16
+#else // VGA16
 bool SETVGA8 = false;
 fabgl::VGA16Controller  DisplayController;
-#endif
+#endif // defined(CYD2432S028v3)
 
 fabgl::PS2Controller     PS2Controller;
 fabgl::Terminal          Terminal;
 #include "confdialog.h"
-#endif
+#endif // FABGL
 // =========================================================================================
 
 #include "abstraction_arduino.h"
@@ -195,17 +203,21 @@ void setup(void) {
   Serial.begin(SERIALSPD);
   delay(500);  // avoid garbage into the UART
 
+#ifdef CYD2432S028v3
+  (new fabgl::Keyboard)->begin(PS2_CLK, PS2_DAT, true, true);
+  DisplayController.begin(TFT_SCK, TFT_MOSI, TFT_DC, TFT_RESET, TFT_CS, TFT_SPIBUS, TFT_BL);
+  DisplayController.setResolution(TFT_240x320);
+  DisplayController.setOrientation(fabgl::TFTOrientation::Rotate90);
+#else // CYD2432S028v3
   PS2Controller.begin(PS2Preset::KeyboardPort0);
-
   DisplayController.begin(); //default
-
-
 //  DisplayController.setResolution(VGA_640x240_60Hz);
   DisplayController.setResolution(VGA_640x480_60Hz);  
 //  DisplayController.shrinkScreen(0, -48);
 //  DisplayController.setResolution(VGA_640x480_73Hz);
 //  DisplayController.setResolution(VGA_640x480_60HzAlt1);  
 //  DisplayController.setResolution(VGA_640x480_60HzD);
+#endif // CYD2432S028v3
 
   Terminal.begin(&DisplayController);
   Terminal.connectLocally();                  // to use Terminal.read(), available(), etc..
@@ -217,10 +229,11 @@ void setup(void) {
   // https://rgbcolorcode.com/color/amber
   // RGB(255,191,0)
 
-if (SETVGA8 == true)
-  { DisplayController.setPaletteItem(4, RGB888(255, 191, 0)); }
-  else   { DisplayController.setPaletteItem(9, RGB888(255, 191, 0)); }
-
+#if defined(VGA8)
+  DisplayController.setPaletteItem(4, RGB888(255, 191, 0));
+#elif defined(VG16)
+  DisplayController.setPaletteItem(9, RGB888(255, 191, 0));
+#endif
   ConfDialogApp::loadConfiguration();
 
 // =========================================================================================
@@ -329,17 +342,17 @@ _puts(GL_REV);
 _puts("\e[0m ]\r\n");
 
 // =========================================================================================
-if (SETVGA8 == true)
+#ifdef VGA8
 // VGA8 Colored Text
               { 
               _puts("\e[37m\e[41m V \e[30m\e[102m G \e[92m\e[104m A \e[30m\e[107m 8 \e[0m-\e[37m\e[44m Controller   \e[0m   [\e[47m \e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[107m \e[0m]\r\n");
               }
-            else
+#else // VGA8
 // VGA16 Colored Text
               {
               _puts("\e[96m\e[101m V \e[30m\e[102m G \e[96m\e[104m A \e[30m\e[103m 16 \e[96m\e[45m Controller   \e[0m   [\e[101m \e[41m \e[102m \e[42m \e[104m \e[44m \e[103m \e[43m \e[105m \e[45m \e[106m \e[46m \e[107m \e[47m \e[0m]\r\n");
               }
-
+#endif // VGA8
 
 // =========================================================================================
 // If Boot-Info is enabled show Boot-Info

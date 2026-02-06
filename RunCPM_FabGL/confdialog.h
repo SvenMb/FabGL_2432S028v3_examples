@@ -74,7 +74,13 @@ struct ConfDialogApp : public uiApp {
 
     rootWindow()->frameProps().fillBackground = false;
 
+#ifdef CYD2432S028v3
+    frame = new uiFrame(rootWindow(), "", UIWINDOW_PARENTCENTER, Size(320, 240), true, STYLE_FRAME);
+    frame->windowStyle().borderSize     = 0;
+#else
     frame = new uiFrame(rootWindow(), "Terminal Configuration", UIWINDOW_PARENTCENTER, Size(380, 275), true, STYLE_FRAME);
+#endif
+
     frameRect = frame->rect(fabgl::uiOrigin::Screen);
 
     frame->frameProps().resizeable        = false;
@@ -94,36 +100,39 @@ struct ConfDialogApp : public uiApp {
       }
     };
 
+#ifdef CYD2432S028v3
+    int y = 8;
+#else
     int y = 24;
-
+#endif
     // little help
-    new uiLabel(frame, "RunCPM for VGA32 by Guido Lehwalder & coopzone-dc", Point(52, y), Size(0, 0), true, STYLE_LABELHELP);
-    new uiLabel(frame, "Press TAB key to move between fields", Point(100, y +24), Size(0, 0), true, STYLE_LABELHELP);
-    new uiLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(52, y + 36), Size(0, 0), true, STYLE_LABELHELP);
+    new uiLabel(frame, "RunCPM for VGA32 by Guido Lehwalder & coopzone-dc", Point(28, y), Size(0, 0), true, STYLE_LABELHELP);
+    new uiLabel(frame, "Press TAB key to move between fields", Point(68, y +24), Size(0, 0), true, STYLE_LABELHELP);
+    new uiLabel(frame, "Outside this dialog press CTRL-ALT-F12 to reset settings", Point(28, y + 36), Size(0, 0), true, STYLE_LABELHELP);
 
 
     y += 56;
 
     // select terminal emulation combobox
     new uiLabel(frame, "Terminal Type", Point(10,  y), Size(0, 0), true, STYLE_LABEL);
-    termComboBox = new uiComboBox(frame, Point(10, y + 12), Size(85, 20), 80, true, STYLE_COMBOBOX);
+    termComboBox = new uiComboBox(frame, Point(10, y + 12), Size(75, 20), 80, true, STYLE_COMBOBOX);
     termComboBox->items().append(SupportedTerminals::names(), SupportedTerminals::count());
     termComboBox->selectItem((int)getTermType());
 
     // select keyboard layout
-    new uiLabel(frame, "Keyboard Layout", Point(110, y), Size(0, 0), true, STYLE_LABEL);
-    kbdComboBox = new uiComboBox(frame, Point(110, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiLabel(frame, "Keyboard", Point(100, y), Size(0, 0), true, STYLE_LABEL);
+    kbdComboBox = new uiComboBox(frame, Point(100, y + 12), Size(70, 20), 70, true, STYLE_COMBOBOX);
     kbdComboBox->items().append(SupportedLayouts::names(), SupportedLayouts::count());
     kbdComboBox->selectItem(getKbdLayoutIndex());
 
     // background color
-    new uiLabel(frame, "Background Color", Point(200,  y), Size(0, 0), true, STYLE_LABEL);
-    bgColorComboBox = new uiColorComboBox(frame, Point(200, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiLabel(frame, "bg Color", Point(185,  y), Size(0, 0), true, STYLE_LABEL);
+    bgColorComboBox = new uiColorComboBox(frame, Point(185, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     bgColorComboBox->selectColor(getBGColor());
 
     // foreground color
-    new uiLabel(frame, "Foreground Color", Point(290,  y), Size(0, 0), true, STYLE_LABEL);
-    fgColorComboBox = new uiColorComboBox(frame, Point(290, y + 12), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiLabel(frame, "fg Color", Point(255,  y), Size(0, 0), true, STYLE_LABEL);
+    fgColorComboBox = new uiColorComboBox(frame, Point(255, y + 12), Size(55, 20), 70, true, STYLE_COMBOBOX);
     fgColorComboBox->selectColor(getFGColor());
 
     y += 56;
@@ -134,8 +143,8 @@ struct ConfDialogApp : public uiApp {
     clickCheckBox->setChecked(getKeyClick() == KEYCLICK_ENABLED);
 
     // bold attribute color
-    new uiLabel(frame, "Bold Color", Point(290,  y-16), Size(0, 0), true, STYLE_LABEL);
-    bdColorComboBox = new uiColorComboBox(frame, Point(290, y -4), Size(75, 20), 70, true, STYLE_COMBOBOX);
+    new uiLabel(frame, "Bold Color", Point(255,  y-16), Size(0, 0), true, STYLE_LABEL);
+    bdColorComboBox = new uiColorComboBox(frame, Point(255, y -4), Size(55, 20), 70, true, STYLE_COMBOBOX);
     bdColorComboBox->selectColor(getBDColor());
 
     y += 24;
