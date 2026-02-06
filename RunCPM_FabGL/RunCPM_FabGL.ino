@@ -115,11 +115,11 @@ fabgl::ST7789nController  DisplayController;
 
 // =========================================================================================
 #elif defined(VGA8)
-bool SETVGA8 = true;
+// bool SETVGA8 = true;
 fabgl::VGA8Controller   DisplayController;
 // =========================================================================================
 #else // VGA16
-bool SETVGA8 = false;
+// bool SETVGA8 = false;
 fabgl::VGA16Controller  DisplayController;
 #endif // defined(CYD2432S028v3)
 
@@ -207,7 +207,7 @@ void setup(void) {
   (new fabgl::Keyboard)->begin(PS2_CLK, PS2_DAT, true, true);
   DisplayController.begin(TFT_SCK, TFT_MOSI, TFT_DC, TFT_RESET, TFT_CS, TFT_SPIBUS, TFT_BL);
   DisplayController.setResolution(TFT_240x320);
-  DisplayController.setOrientation(fabgl::TFTOrientation::Rotate90);
+  DisplayController.setOrientation(fabgl::TFTOrientation::Rotate270);
 #else // CYD2432S028v3
   PS2Controller.begin(PS2Preset::KeyboardPort0);
   DisplayController.begin(); //default
@@ -231,7 +231,7 @@ void setup(void) {
 
 #if defined(VGA8)
   DisplayController.setPaletteItem(4, RGB888(255, 191, 0));
-#elif defined(VG16)
+#elif defined(VGA16)
   DisplayController.setPaletteItem(9, RGB888(255, 191, 0));
 #endif
   ConfDialogApp::loadConfiguration();
