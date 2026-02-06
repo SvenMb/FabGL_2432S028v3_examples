@@ -91,8 +91,10 @@ struct ConfDialogApp : public uiApp {
 #ifdef CYD2432S028v3
     frame = new uiFrame(rootWindow(), "", UIWINDOW_PARENTCENTER, Size(320, 240), true, STYLE_FRAME);
     frame->windowStyle().borderSize     = 0;
+    int y = 4;
 #else
     frame = new uiFrame(rootWindow(), "Terminal Configuration", UIWINDOW_PARENTCENTER, Size(380, 275), true, STYLE_FRAME);
+    int y = 24;
 #endif
 
     frameRect = frame->rect(fabgl::uiOrigin::Screen);
@@ -114,11 +116,6 @@ struct ConfDialogApp : public uiApp {
       }
     };
 
-#ifdef CYD2432S028v3
-    int y = 4;
-#else
-    int y = 24;
-#endif
     // little help
     new uiLabel(frame, "RunCPM for VGA32 by Guido Lehwalder & coopzone-dc", Point(28, y), Size(0, 0), true, STYLE_LABELHELP);
     new uiLabel(frame, "Press TAB key to move between fields", Point(68, y +18), Size(0, 0), true, STYLE_LABELHELP);
@@ -287,7 +284,7 @@ struct ConfDialogApp : public uiApp {
   }
 
 static int getSerCtl() {
-    return preferences.getInt("SerCtl", SERCTL_DISABLED);
+    return preferences.getInt("SerCtl", SERCTL_ENABLED);
   }
 
 static int getSerMir() {

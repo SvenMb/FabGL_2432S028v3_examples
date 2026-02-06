@@ -517,34 +517,36 @@ uint32 _HardwareIn(const uint32 Port) {
 // =========================================================================================
 
 int _kbhit(void) {
-
-if (SERCTL == true)
-{
-return(Serial.available());
-}
-else
-{
-return(Terminal.available()); 
-}
-
+#ifdef FABGL
+  if (SERCTL == true) {
+    return(Serial.available()||Terminal.available());
+  } else {
+    return(Terminal.available()); 
+  }
+#else
+  return(Serial.available());
+#endif
 }
 // =========================================================================================
 // _getch
 // =========================================================================================
 
 uint8 _getch(void) {
-
-if (SERCTL == true)
-{
-while (!Serial.available());
-return(Serial.read());  
-}
-else
-{
-while (!Terminal.available());
-return(Terminal.read()); 
-}
-
+#ifdef FABGL
+  if (SERCTL == true) {
+    while (!Serial.available() && !Terminal.available());
+    if (Serial.available())
+      return(Serial.read());
+    else
+      return(Terminal.read());   
+  } else {
+    while (!Terminal.available());
+    return(Terminal.read()); 
+  }
+#else
+  while (!Serial.available());
+  return(Serial.read());
+#endif
 }
 // =========================================================================================
 // _getche
@@ -553,14 +555,14 @@ return(Terminal.read());
 uint8 _getche(void) {
   uint8 ch = _getch();
 
-                    #ifdef FABGL                   
-                    Terminal.write(ch);
-                    #endif
+#ifdef FABGL                   
+  Terminal.write(ch);
+#endif
 
-if (SERMIR == true) {
-                    Serial.write(ch);
-                    }   
-return(ch);
+  if (SERMIR == true) {
+    Serial.write(ch);
+  }   
+  return(ch);
 }
 
 // =========================================================================================
