@@ -110,9 +110,6 @@ fabgl::ST7789nController  DisplayController;
 // VGA16Controller does work good/better with FabGL-master from 11.10.2021
 // =========================================================================================
 
-// #define VGA8  // define if low on memory
-// #define VGA16 // no need to define, is else path anyway
-
 // =========================================================================================
 #elif defined(VGA8)
 // bool SETVGA8 = true;
@@ -487,7 +484,7 @@ if (!RAM) {
 // Press F12 for Config-Menue & BREAK - START
 // or press F2 for Config-Menue for Vestel VES-541 Mini keyboard without F12-key
 // =========================================================================================
-
+  auto dlgApp = new ConfDialogApp;
   // onVirtualKey is triggered whenever a key is pressed or released
   Terminal.onVirtualKeyItem = [&](VirtualKeyItem * vkItem) 
   {
@@ -506,9 +503,9 @@ if (!RAM) {
         else if (!vkItem->CTRL && !vkItem->LALT && !vkItem->RALT && !vkItem->down) {        
         // releasing F12 key to open configuration dialog
         Terminal.deactivate();
-        auto dlgApp = new ConfDialogApp;
+        // auto dlgApp = new ConfDialogApp;
         dlgApp->run(&DisplayController);
-        delete dlgApp;
+        // delete dlgApp;
         Terminal.keyboard()->emptyVirtualKeyQueue();
         Terminal.activate();
 
