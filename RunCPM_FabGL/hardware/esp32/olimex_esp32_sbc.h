@@ -3,6 +3,9 @@
 
 // SPI_DRIVER_SELECT must be set to 0 in SdFat/SdFatConfig.h (default is 0)
 
+// #define VGA8  // define if low on memory
+#define VGA16 // no need to define, is else path anyway
+
 SdFat SD;
 #define SS 13. //Bug fix, you have to define this because later it is used by SD.init. This was missed out on the master branch.
 #define SPIINIT 14,35,12,SS // Olimex_ESP32_SBC_FabGL (sck, miso, mosi, cs)

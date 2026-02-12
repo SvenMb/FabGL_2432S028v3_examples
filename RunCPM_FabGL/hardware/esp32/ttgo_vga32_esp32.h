@@ -19,6 +19,9 @@ SdFat SD;
 #define board_esp32
 #define board_digital_io
 
+// #define VGA8  // define if low on memory
+#define VGA16 // no need to define, is else path anyway
+
 uint8 esp32bdos(uint16 dmaaddr) {
 	return(0x00);
 }
